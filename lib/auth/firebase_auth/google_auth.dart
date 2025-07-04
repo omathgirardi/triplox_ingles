@@ -1,23 +1,16 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-
-final _googleSignIn = GoogleSignIn(scopes: ['profile', 'email']);
 
 Future<UserCredential?> googleSignInFunc() async {
-  if (kIsWeb) {
-    // Once signed in, return the UserCredential
-    return await FirebaseAuth.instance.signInWithPopup(GoogleAuthProvider());
-  }
-
-  await signOutWithGoogle().catchError((_) => null);
-  final auth = await (await _googleSignIn.signIn())?.authentication;
-  if (auth == null) {
+  try {
+    // ✅ Google Sign-In unificado para Web e Mobile
+    GoogleAuthProvider authProvider = GoogleAuthProvider();
+    return await FirebaseAuth.instance.signInWithPopup(authProvider);
+  } catch (e) {
+    print('Erro no login Google: $e');
     return null;
   }
-  final credential = GoogleAuthProvider.credential(
-      idToken: auth.idToken, accessToken: auth.accessToken);
-  return FirebaseAuth.instance.signInWithCredential(credential);
 }
 
-Future signOutWithGoogle() => _googleSignIn.signOut();
+Future<void> signOutWithGoogle() async {
+  await FirebaseAuth.instance.signOut();
+}
